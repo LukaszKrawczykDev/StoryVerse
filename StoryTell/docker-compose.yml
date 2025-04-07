@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:17
+    container_name: storytell-db
+    environment:
+      POSTGRES_USER: storytell
+      POSTGRES_PASSWORD: storytell123
+      POSTGRES_DB: storytell_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
