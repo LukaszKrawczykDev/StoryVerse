@@ -1,13 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const pool = require('./db');
+const { DataSource } = require('typeorm');
 
 const app = express();
 const PORT = process.env.PORT || 5050;
 
 app.use(express.json());
 
-// Prosty test połączenia z bazą
 app.get('/', async (req, res) => {
     try {
         const result = await pool.query('SELECT NOW()');
@@ -19,7 +19,6 @@ app.get('/', async (req, res) => {
     }
 });
 
-// Prosty endpoint testowy
 app.get('/ping', (req, res) => {
     console.log("🔥 Odebrano /ping!");
     res.send('pong!');
