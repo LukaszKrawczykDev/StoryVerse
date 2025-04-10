@@ -1,0 +1,230 @@
+**Aby pobrać projekt:**
+git clone ...
+I juz jak otworzony plik w WebStorm:
+cd backend/
+npm install -  cały node_modules zostanie zbudowany na podstawie package.json.
+
+**Prisma - tworzenie tabel - migracje**
+w folderze backend: npx prisma migrate dev --name jakaś_nazwa
+
+****PLAN DZIAŁANIA****
+✅ ETAP 0: Postawienie całej bazy danych
+
+🔧 Cel: mieć gotową strukturę danych w bazie
+	1.	Przepisz schemat bazy do prisma/schema.prisma
+	2.	Użyj npx prisma migrate dev --name init-schema
+	3.	Sprawdź w WebStorm lub prisma studio, że wszystkie tabele są
+
+📌 Nie tworzysz jeszcze żadnych funkcji — tylko strukturę
+
+✅ ETAP 1: Rejestracja i logowanie
+
+🔐 Cel: użytkownik może się zarejestrować i zalogować
+
+Backend:
+	•	Endpoint POST /auth/register – tworzy użytkownika (z haszowaniem)
+	•	Endpoint POST /auth/login – sprawdza dane i zwraca token
+	•	Middleware auth.js – sprawdza, czy użytkownik ma token (czyli czy jest zalogowany)
+	•	Endpoint GET /me – zwraca dane zalogowanego
+
+Frontend:
+	•	Stwórz stronę logowania (LoginPage.jsx)
+	•	Dodaj tymczasowy routing (np. od razu pokazuj logowanie)
+	•	Zrób AuthContext (lub useAuth()) — trzymasz tam dane użytkownika
+	•	Jeśli zalogowany → przekieruj do /home, jak nie → pokaż logowanie
+
+📌 Możesz na razie nie mieć pełnej nawigacji – ważne, że logowanie działa.
+
+
+✅ ETAP 2: Strona główna + przyciski logowania/rejestracji
+
+🎨 Cel: użytkownik widzi przyciski: Zaloguj się, Zarejestruj się
+
+Frontend:
+	•	Komponent Navbar
+	•	Komponent HomePage
+	•	Routing do /login, /register, /
+
+📌 W Navbar pokazuj inne rzeczy w zależności od tego, czy użytkownik jest zalogowany (auth.user !== null)
+
+
+✅ ETAP 3: Mój profil (edycja, avatar)
+
+👤 Cel: użytkownik może zmienić swoje dane
+
+Backend:
+	•	PUT /users/me – aktualizacja bio, avatar
+	•	GET /users/me – pobranie danych profilu
+
+Frontend:
+	•	ProfilePage z edycją danych
+	•	Zapis danych na serwer przez fetch
+
+
+✅ ETAP 4: Tworzenie opowiadań i rozdziałów
+
+📚 Cel: użytkownik może dodać opowiadanie i rozdziały
+	•	Formularz dodawania opowiadania (/create-story)
+	•	Endpoint POST /stories
+	•	Dodawanie rozdziałów (formularz + endpoint)
+
+
+✅ ETAP 5: Strona główna – lista opowiadań
+
+📋 Cel: inni użytkownicy mogą przeglądać opowiadania
+	•	Endpoint GET /stories
+	•	Komponent StoryCard
+	•	Strona HomePage (z listą najnowszych opowiadań)
+
+
+✅ ETAP 6: Wyszukiwanie i filtrowanie opowiadań
+
+📚 Cel: użytkownik może wyszukiwać i filtrować historie
+
+Backend:
+	•	Endpoint GET /stories?search=coś&sortBy=popular
+	•	Obsłuż: tytuł, opis, autor, tagi, kategorie
+	•	Sortowanie: najnowsze, najpopularniejsze, najwyżej oceniane
+	•	Możliwość paginacji (np. ?page=2&limit=10)
+
+Frontend:
+	•	Komponent SearchBar (input + przycisk)
+	•	Select do sortowania
+	•	Lista wyników jako StoryCard
+
+
+✅ ETAP 7: Panel pojedynczego opowiadania i czytnik rozdziałów
+
+📖 Cel: użytkownik może czytać opowiadanie i przechodzić między rozdziałami
+
+Backend:
+	•	GET /stories/:id – dane opowiadania + autor
+	•	GET /stories/:id/chapters – lista rozdziałów
+	•	GET /chapters/:id – zawartość konkretnego rozdziału
+
+Frontend:
+	•	StoryPage.jsx – tytuł, opis, rozdziały, okładka
+	•	ReaderPage.jsx – zawartość rozdziału, przyciski: „następny”, „poprzedni”
+
+
+✅ ETAP 8: Komentarze pod rozdziałami
+
+💬 Cel: użytkownik może komentować konkretny rozdział
+
+Backend:
+	•	Model Comment (chapterId, userId, content, createdAt)
+	•	POST /comments
+	•	GET /chapters/:id/comments
+
+Frontend:
+	•	Komponent CommentForm
+	•	Komponent CommentList
+
+
+✅ ETAP 9: Oceny opowiadań
+
+⭐ Cel: użytkownik może ocenić opowiadanie w skali 1-5
+
+Backend:
+	•	Model Rating (userId, storyId, value)
+	•	POST /ratings
+	•	GET /stories/:id/ratings
+
+Frontend:
+	•	Komponent StarRating
+	•	Pokazanie średniej oceny w StoryCard
+
+
+✅ ETAP 10: Obserwowanie autorów
+
+👥 Cel: użytkownik może obserwować innych i dostawać powiadomienia o ich aktywności
+
+Backend:
+	•	Model Follow (followerId, followingId)
+	•	Endpointy:
+	•	POST /follow/:userId
+	•	GET /me/following
+
+Frontend:
+	•	Przycisk „Obserwuj” w UserProfilePage
+	•	Lista obserwowanych w profilu
+
+
+✅ ETAP 11: Biblioteka użytkownika
+
+📚 Cel: użytkownik może zapisać opowiadania do listy przeczytanych lub planowanych
+
+Backend:
+	•	Model LibraryItem (userId, storyId, status: TO_READ / READ)
+	•	Endpointy:
+	•	POST /library
+	•	PUT /library/:id
+	•	GET /me/library
+
+Frontend:
+	•	Przycisk: „Dodaj do biblioteki”
+	•	Zakładka „Moja biblioteka” z filtrami
+
+
+✅ ETAP 12: Powiadomienia
+
+🔔 Cel: użytkownik dostaje powiadomienia o nowych komentarzach, ocenach, rozdziałach
+
+Backend:
+	•	Model Notification (userId, type, message, read, link, createdAt)
+	•	Endpointy:
+	•	GET /me/notifications
+	•	PUT /notifications/:id/read
+
+Frontend:
+	•	Ikonka 🔔 z liczbą nieprzeczytanych
+	•	Lista powiadomień
+
+
+✅ ETAP 13: Tryb ciemny i ustawienia konta
+
+🌙 Cel: użytkownik może ustawić tryb ciemny oraz prywatność profilu
+
+Backend:
+	•	W User: isPrivate, canBeCommented, itp.
+	•	PUT /users/me/settings
+
+Frontend:
+	•	Przełącznik „Ciemny / Jasny”
+	•	Przełączniki prywatności w ustawieniach
+
+✅ ETAP 14: Panel administracyjny
+
+🛡 Cel: administrator może zarządzać użytkownikami, treścią, statystykami
+
+Backend:
+	•	Endpointy admina:
+	•	GET /admin/users
+	•	DELETE /admin/users/:id
+	•	DELETE /admin/stories/:id
+	•	GET /admin/stats
+	•	Middleware isAdmin (sprawdza rolę użytkownika)
+
+Frontend:
+	•	AdminDashboard
+	•	Tabele z listą użytkowników, opowiadań
+	•	Statystyki: liczba userów, opowiadań, komentarzy
+
+
+🧪 ETAP 15: Testowanie, walidacja, błędy
+
+✅ Cel: aplikacja jest bezpieczna i działa stabilnie
+	•	Walidacja danych przy wysyłaniu (Zod / Joi)
+	•	Middleware do obsługi błędów
+	•	Testy – minimum dla logowania, tworzenia opowiadań
+	•	Bezpieczne hasła (bcrypt)
+	•	Ochrona endpointów (middleware)
+
+
+🛠 BONUS: funkcje premium
+
+Możesz później dodać:
+	•	📈 Statystyki odwiedzin
+	•	📁 Eksport opowiadania jako PDF
+	•	📅 Harmonogram publikacji rozdziałów
+	•	💬 Chat między użytkownikami
