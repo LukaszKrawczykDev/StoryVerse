@@ -13,3 +13,215 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  user
+  admin
+}
+
+enum Visibility {
+  public
+  private
+}
+
+enum Status {
+  to_read
+  read
+}
+
+enum Theme {
+  light
+  dark
+}
+
+enum Privacy {
+  public
+  private
+}
+
+enum NotificationType {
+  comment
+  rating
+  follow
+  story_update
+}
+
+enum ReportStatus {
+  pending
+  resolved
+}
+
+model User {
+  id            Int               @id @default(autoincrement())
+  username      String            @unique @db.VarChar(50)
+  email         String            @unique @db.VarChar(100)
+  password_hash String            @db.VarChar(255)
+  avatar        String?           @db.VarChar(255)
+  bio           String?
+  role          Role?             @default(user)
+  created_at    DateTime?         @default(now())
+
+  announcements Announcement[]    @relation("AdminAnnouncements")
+  announcementUsers AnnouncementUser[]
+  stories        Story[]
+  comments       Comment[]
+  ratings        Rating[]
+  follows        Follow[]         @relation("Follower")
+  following      Follow[]         @relation("Following")
+  libraries      Library[]
+  notifications  Notification[]
+  reportsSent    Report[]         @relation("Reporter")
+  reportsReceived Report[]        @relation("ReportedUser")
+  settings       UserSettings?
+}
+
+model Announcement {
+  id         Int                @id @default(autoincrement())
+  admin      User?              @relation("AdminAnnouncements", fields: [admin_id], references: [id], onDelete: Cascade)
+  admin_id   Int?
+  title      String
+  message    String
+  created_at DateTime?          @default(now())
+
+  users      AnnouncementUser[]
+}
+
+model AnnouncementUser {
+  announcement Announcement @relation(fields: [announcement_id], references: [id], onDelete: Cascade)
+  announcement_id Int
+  user            User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id         Int
+
+  @@id([announcement_id, user_id])
+}
+
+model Category {
+  id    Int               @id @default(autoincrement())
+  name  String            @unique @db.VarChar(100)
+  storyCategories StoryCategory[]
+}
+
+model Story {
+  id              Int              @id @default(autoincrement())
+  user            User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id         Int
+  title           String           @db.VarChar(255)
+  cover_image     String?          @db.VarChar(255)
+  description     String?
+  visibility      Visibility?      @default(public)
+  created_at      DateTime?        @default(now())
+  updated_at      DateTime?        @updatedAt
+
+  chapters        Chapter[]
+  storyTags       StoryTag[]
+  storyCategories StoryCategory[]
+  libraryItems    Library[]
+}
+
+model Chapter {
+  id         Int       @id @default(autoincrement())
+  story      Story?    @relation(fields: [story_id], references: [id], onDelete: Cascade)
+  story_id   Int?
+  title      String    @db.VarChar(255)
+  content    String
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+
+  comments   Comment[]
+  ratings    Rating[]
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  user       User?    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    Int?
+  chapter    Chapter? @relation(fields: [chapter_id], references: [id], onDelete: Cascade)
+  chapter_id Int?
+  content    String
+  created_at DateTime? @default(now())
+}
+
+model Follow {
+  follower   User @relation("Follower", fields: [follower_id], references: [id], onDelete: Cascade)
+  follower_id Int
+  following  User @relation("Following", fields: [following_id], references: [id], onDelete: Cascade)
+  following_id Int
+  created_at  DateTime? @default(now())
+
+  @@id([follower_id, following_id])
+}
+
+model Library {
+  user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id   Int
+  story     Story  @relation(fields: [story_id], references: [id], onDelete: Cascade)
+  story_id  Int
+  status    Status? @default(to_read)
+  created_at DateTime? @default(now())
+
+  @@id([user_id, story_id])
+}
+
+model Notification {
+  id         Int              @id @default(autoincrement())
+  user       User?            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    Int?
+  type       NotificationType
+  message    String
+  is_read    Boolean?         @default(false)
+  created_at DateTime?        @default(now())
+}
+
+model Rating {
+  id         Int       @id @default(autoincrement())
+  user       User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    Int?
+  chapter    Chapter?  @relation(fields: [chapter_id], references: [id], onDelete: Cascade)
+  chapter_id Int?
+  rating     Int?
+  created_at DateTime? @default(now())
+}
+
+model Report {
+  id               Int          @id @default(autoincrement())
+  reporter         User?        @relation("Reporter", fields: [reporter_id], references: [id], onDelete: Cascade)
+  reporter_id      Int?
+  reported_user    User?        @relation("ReportedUser", fields: [reported_user_id], references: [id], onDelete: Cascade)
+  reported_user_id Int?
+  reason           String
+  status           ReportStatus? @default(pending)
+  created_at       DateTime?     @default(now())
+}
+
+model StoryCategory {
+  story     Story    @relation(fields: [story_id], references: [id], onDelete: Cascade)
+  story_id  Int
+  category  Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  category_id Int
+
+  @@id([story_id, category_id])
+}
+
+model Tag {
+  id    Int       @id @default(autoincrement())
+  name  String    @unique @db.VarChar(50)
+  storyTags StoryTag[]
+}
+
+model StoryTag {
+  story    Story @relation(fields: [story_id], references: [id], onDelete: Cascade)
+  story_id Int
+  tag      Tag   @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+  tag_id   Int
+
+  @@id([story_id, tag_id])
+}
+
+model UserSettings {
+  id_user_settings Int     @id @default(autoincrement())
+  user             User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id          Int     @unique
+  theme            Theme?  @default(light)
+  privacy          Privacy? @default(public)
+  created_at       DateTime? @default(now())
+}
+
