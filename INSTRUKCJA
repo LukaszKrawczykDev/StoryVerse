@@ -228,3 +228,33 @@ Możesz później dodać:
 	•	📁 Eksport opowiadania jako PDF
 	•	📅 Harmonogram publikacji rozdziałów
 	•	💬 Chat między użytkownikami
+
+backend/
+├── prisma/                 ← schemat bazy danych
+│   └── schema.prisma
+├── src/                    ← cały kod aplikacji
+│   ├── controllers/        ← logika dla endpointów (np. register, createStory)
+│   ├── routes/             ← pliki z definicjami ścieżek (endpointów)
+│   ├── middlewares/        ← strażnicy (np. auth, isAdmin)
+│   ├── services/           ← pomocnicze funkcje (np. wysyłanie maili, walidacja)
+│   ├── utils/              ← narzędzia: generowanie tokenów, hashowanie haseł
+│   ├── config/             ← np. config JWT, bazy danych, środowisko
+│   └── app.js              ← konfiguracja Expressa (importuje middleware, routery)
+├── prismaClient.js         ← singleton klienta Prisma
+├── index.js                ← uruchamia Express + App
+├── .env
+├── .gitignore
+└── package.json
+
+src/
+├── assets/                ← obrazki, ikonki
+├── components/            ← małe, wielokrotne komponenty (np. Input, Navbar)
+├── context/               ← React context (np. AuthContext)
+├── hooks/                 ← niestandardowe hooki (np. useAuth)
+├── pages/                 ← konkretne strony (LoginPage, RegisterPage, HomePage)
+├── services/              ← pliki do fetchowania backendu (np. auth.js)
+├── utils/                 ← funkcje pomocnicze (np. formatowanie daty)
+├── App.jsx
+├── App.css
+├── index.css
+└── main.jsx
